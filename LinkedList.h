@@ -43,13 +43,18 @@ private: // Member variables
     Node* _tail;
     unsigned int _totalSize;
     unsigned int _groupNumber;
-    vector<Node*> _referenceVector; // This contains a Node* to every INDEX_INCREMENT Node for faster looking up / insertion / deletion
+
+    // This contains a Node* to every 'numberForGrouping' Nodes for faster looking up / insertion / deletion
+    // This is 0 by default, and will not be used if the user does not specifiy a value > 0.
+    vector<Node*> _referenceVector;
 
 
 public: // Constructors / Destructors
     LinkedList() { _ctor(); _totalSize = 0; }
     LinkedList(_T info) { _ctor(info); _totalSize = 1; }
     ~LinkedList() { _dtor(_head); }
+
+
 
 public: // Functionality
 
@@ -178,6 +183,10 @@ public: // Functionality
 
         // ERROR HANDLE IF THERE ARE NO ELEMENTS
     }
+
+
+
+
 
 private: // Utility functions for above functions
 
