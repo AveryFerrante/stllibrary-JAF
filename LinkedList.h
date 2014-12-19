@@ -1,10 +1,13 @@
+// Created by Joseph Avery Ferrante on 12/18/14
+
 #ifndef LINKEDLIST_H
 #define LINKEDLIST_H
+
 #include <cassert>
 #include <stdexcept>
 #include <iostream>
 #include <vector>
-#include <cstddef>
+#include <cstddef> // This is for nullptr
 
 using namespace std;
 
