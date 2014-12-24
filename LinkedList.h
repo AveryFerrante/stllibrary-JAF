@@ -102,9 +102,18 @@ public: // Functionality
     void insertHead(_T info)
     {
         Node* newNode = new Node(info);
-        newNode->__next = _head;
-        _head->__prev = newNode;
-        _head = newNode;
+        if(_totalSize == 0)
+        {
+            _head = newNode;
+            _tail = newNode;
+        }
+        else
+        {
+            newNode->__next = _head;
+            _head->__prev = newNode;
+            _head = newNode;
+        }
+
         increaseSize();
     }
 
