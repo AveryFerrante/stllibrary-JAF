@@ -1,4 +1,5 @@
 // Created by Joseph Avery Ferrante on 12/18/14
+// INSERTING CANNOT BREAK THE REFERENCE SYSTEM!!!
 
 #ifndef LINKEDLIST_H
 #define LINKEDLIST_H
@@ -129,6 +130,7 @@ public: // Functionality
         {
             Node* temp = atIndex(index);
             insert(temp, info);
+            // Shift reference vector!
         }
     }
 
@@ -343,6 +345,15 @@ private: // Utility functions for above functions
         }
 
         return temp;
+    }
+
+    void shiftForward(int startIndex)
+    {
+        for(int i = startIndex; i < _referenceVector.size(); ++i)
+        {
+            assert ( ( _referenceVector[i])->__prev != nullptr );
+            _referenceVector[i] = (_referenceVector[i])->__prev;
+        }
     }
 
     void _swap(Node* first, Node* second)
