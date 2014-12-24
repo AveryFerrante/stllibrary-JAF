@@ -76,24 +76,27 @@ public: // Functionality
         if(_tail != nullptr)
         {
             _T temp = _tail->__data;
+            bool deleted = decreaseSize();
             if(_totalSize == 1) // There would be no items in the list after this pop
             {
-                delete _tail;
+                if(!deleted)
+                    delete _tail;
                 _tail = nullptr;
                 _head = nullptr;
             }
             else
             {
                 _tail = _tail->__prev;
-                delete _tail->__next;
+                if(!deleted)
+                    delete _tail->__next;
                 _tail->__next = nullptr;
             }
 
-            decreaseSize();
             return temp;
         }
 
-        // ERROR HANDLING IF THEY TRY TO POP FROM A LIST CONTAINING 0 ELEMENTS
+        else
+            throw out_of_range("Failed to 'pop' element: the current list is empty.");
     }
 
     void insertHead(_T info)
@@ -107,14 +110,17 @@ public: // Functionality
 
     void insertAfter(unsigned int index, _T info) // Inserts the Node* AFTER the Node at index
     {
-        // ERROR HANDLING TO CHECK THE BOUNDS OF INDEX
-
-        Node* temp = atIndex(index);
+        if(index > (_totalSize - 1))
+            throw out_of_range("Attempted to access an element outside of the range of the current list");
 
         if(index == (_totalSize - 1)) // basically just doing an append
             push(info);
+
         else
+        {
+            Node* temp = atIndex(index);
             insert(temp, info);
+        }
     }
 
     bool insertAfter(const _T &key, _T info) // true if successful, false if the key is not in the LL
@@ -135,7 +141,8 @@ public: // Functionality
 
     void insertBefore(unsigned int index, _T info) // Insers the Node* BEFORE the Node at index
     {
-        // ERROR HANDLING TO CHECK BOUNDS OF INDEX
+        if(index > (_totalSize - 1))
+            throw out_of_range("Attempted to access an element outside of the range of the current list");
 
         if(index > 0) insertAfter(--index, info);
 
@@ -159,13 +166,63 @@ public: // Functionality
         return false;
     }
 
+    void swap(unsigned int pos1, unsigned int pos2) // This function / its helper function needs work, it seg faults.
+    {
+        if(pos1 > _totalSize - 1 || pos2 > _totalSize - 1)
+            throw out_of_range("Attempted to swap an element outside of the range of the current list");
+
+        if(pos1 == pos2)
+            return;
+
+        Node* first = atIndex(pos1);
+        Node* second = atIndex(pos2);
+
+        if(first == _head)
+        {
+            _swap(first, second);
+
+            if(second == _tail)
+                _tail = first;
+
+            _head = second;
+        }
+        else if(second == _head)
+        {
+            _swap(first, second);
+
+            if(first == _tail)
+                _tail = second;
+
+            _head = first;
+        }
+        else if(first == _tail)
+        {
+            _swap(first, second);
+            _tail = second;
+        }
+        else if(second == _tail)
+        {
+            _swap(first, second);
+            _tail = first;
+        }
+        else
+            _swap(first, second);
+    }
+
     int size() { return _totalSize; }
 
     _T& operator[](unsigned int index)
     {
-        if(index >= _totalSize) { throw invalid_argument("Attempted to access elements outside of largest bounds."); }
-
+        if(index >= _totalSize) throw invalid_argument("Attempted to access elements outside of largest bounds.");
         return atIndex(index)->__data;
+    }
+
+    bool exists(const _T &source)
+    {
+        if(atKey(source) != nullptr)
+            return true;
+
+        return false;
     }
 
     _T& head()
@@ -173,7 +230,8 @@ public: // Functionality
         if(_head != nullptr)
             return _head->__data;
 
-        // ERROR HANDLE IF THERE ARE NO ELEMENTS
+        else
+            throw out_of_range("Failed to return 'head' data: the current list is empty");
     }
 
     _T& tail()
@@ -181,7 +239,8 @@ public: // Functionality
         if(_tail != nullptr)
             return _tail->__data;
 
-        // ERROR HANDLE IF THERE ARE NO ELEMENTS
+        else
+            throw out_of_range("Failed to return 'tail' data: the current list is empty");
     }
 
 
@@ -226,7 +285,6 @@ private: // Utility functions for above functions
         increaseSize();
     }
 
-
     void increaseSize()
     {
         ++ _totalSize;
@@ -234,7 +292,19 @@ private: // Utility functions for above functions
                     _referenceVector.push_back(_tail); // This will put a reference into the vector for helping to look up
     }
 
-    void decreaseSize() { -- _totalSize; }
+    bool decreaseSize()
+    {
+        if((_groupNumber) && _totalSize % _groupNumber == 0) // We are popping a reference index, so pop it from the vector
+        {
+            _referenceVector.pop_back(); // This destroys the removed element
+            --_totalSize;
+            cout << "Deleted in decreaseSize" << endl;
+            return true; // So we know the element has been deleted and I don't attempt to re-delete it
+        }
+
+        -- _totalSize;
+        return false;
+    }
 
 
     Node* atKey(const _T &key)
@@ -250,7 +320,7 @@ private: // Utility functions for above functions
     {
         // All errors related to no elements existing should be handled before calling this function
         Node* temp;
-        if((_groupNumber) && index > _groupNumber)
+        if((_groupNumber) && index >= _groupNumber)
         {
             temp = _referenceVector[(index / _groupNumber) - 1]; // 0 is the starting index
             for(size_t i = 0; i < (index % _groupNumber) + 1; ++i)
@@ -264,6 +334,22 @@ private: // Utility functions for above functions
         }
 
         return temp;
+    }
+
+    void _swap(Node* first, Node* second)
+    {
+        Node* temp;
+
+        // Swaps the 'next' pointers values
+        temp = first->__next;
+        first->__next = second->__next;
+        second->__next = temp;
+
+        // Swaps the 'prev' pointers values
+        temp = first->__prev;
+        first->__prev = second->__prev;
+        second->__prev = temp;
+
     }
 
 
