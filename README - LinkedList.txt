@@ -1,6 +1,44 @@
+----------Introduction----------
+
+  What is different about this Linked List?
+
+	This implementation has a faster system for accessing the elements contained. In a 'traditional' linked list, accessing an 
+	element generally reqiures starting at the beginning (head), and going through each element, in order, until the desired element is 
+	found. For example, accessing the middle element of a linked list with 100,000,000 elements requires 50,000,000 comparisons.
+
+	This implementation allows the user to specifiy a 'reference number.' This keeps a record every n-th element added, where n is the 
+	reference number specified by the user. Then, when searching, the list can automatically begin searching from the closest reference.
+	For example, if the user specifies the reference number to be 10, then every element that is a multiple of 10 is added to the 
+	reference list. Then, when searching for an element, we will say element 34, the list automatically begins searching from the 30th 
+	element in the list, ultimately limiting the amount of comparisons from 35 (elements 0 - 34) to 5 (elements 30 - 34). 
+	
+	Some things to consider: the smaller the reference number, the faster searching will be, but the more memory Linked List will
+	occupy. Now, Linked List only keeps a reference to each place, so the memory used is not over the top, but it can be a factor,
+	especially in very large lists.
+
+
+
+  Creating a Linked List object:
+	
+	A linked list object only requires one argument to be instantiated, and that is the 'type' of list you want.
+	Examples:
+		A list of strings: 				LinkedList<string> list;
+		A list of user defined class 'Students':	LinkedList<Students> list;
+
+	Alternatively, the user may specify a reference number. If you do not know what this is, see the above section 'what is different
+	about this Linked List?'. By default, this feature is turned off, and no references are contained. The user may specifiy any number
+	in unsigned integer range.
+	Examples:
+		A list of strings with references every 100 objects:	LinkedList<string, 100> list;
+		A list of string pointers without any references: 	LinkedList<string *> list; (or LinkedList<string *, 0> list;)
+	
+
+
+
 **Important Note: Linked List does not support type integer. This is because some functions rely on passing index positions, and have
-overladed counter parts that rely on passing the type of the linked list (i.e. integers), and causes ambiguous overloaded function errors.
-Honestly, I don't think anyone should be using the Linked List class for just integers.
+overloaded counter parts that rely on passing an object of the type of the linked list (i.e. integers), and causes ambiguous overloaded 
+function errors.
+Honestly, I don't think anyone should be using the Linked List class for just integers anyways.
 
 
 
