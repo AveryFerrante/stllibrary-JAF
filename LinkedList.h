@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <vector>
-#include <cstddef> // This is for nullptr
+#include <cstddef> // This is for NULL
 
 using namespace std;
 
@@ -26,14 +26,14 @@ private: // Struct
         Node(const _T &info)
         {
             __data = info;
-            __next = nullptr;
-            __prev = nullptr;
+            __next = NULL;
+            __prev = NULL;
         }
 
         Node(const _T &info, Node* const previous)
         {
             __data = info;
-            __next = nullptr;
+            __next = NULL;
             __prev = previous;
         }
     };
@@ -61,7 +61,7 @@ public: // Functionality
 
     void push(_T info)
     {
-        if(_head == nullptr) _ctor(info); // Nothing is in the list yet
+        if(_head == NULL) _ctor(info); // Nothing is in the list yet
         else
         {
             Node* temp = new Node(info, _tail); // Links it backwards
@@ -74,7 +74,7 @@ public: // Functionality
 
     _T pop()
     {
-        if(_tail != nullptr)
+        if(_tail != NULL)
         {
             _T temp = _tail->__data;
             bool deleted = decreaseSize();
@@ -82,15 +82,15 @@ public: // Functionality
             {
                 if(!deleted)
                     delete _tail;
-                _tail = nullptr;
-                _head = nullptr;
+                _tail = NULL;
+                _head = NULL;
             }
             else
             {
                 _tail = _tail->__prev;
                 if(!deleted)
                     delete _tail->__next;
-                _tail->__next = nullptr;
+                _tail->__next = NULL;
             }
 
             return temp;
@@ -115,7 +115,8 @@ public: // Functionality
             _head = newNode;
         }
 
-        increaseSize();
+        bool newElement = increaseSize();
+        _shiftForward(0, newElement, true);
     }
 
     void insertAfter(unsigned int index, _T info) // Inserts the Node* AFTER the Node at index
@@ -129,15 +130,15 @@ public: // Functionality
         else
         {
             Node* temp = atIndex(index);
-            insert(temp, info);
-            // Shift reference vector!
+            bool newElement = insert(temp, info);
+            _shiftForward(index, newElement, true);
         }
     }
 
     bool insertAfter(const _T &key, _T info) // true if successful, false if the key is not in the LL
     {
         Node* temp = atKey(key);
-        if(temp != nullptr)
+        if(temp != NULL)
         {
             if(temp == _tail)
                 push(info);
@@ -164,7 +165,7 @@ public: // Functionality
     bool insertBefore(const _T &key, _T info)
     {
         Node* temp = atKey(key);
-        if(temp != nullptr)
+        if(temp != NULL)
         {
             if(temp == _head)
                 insertHead(info);
@@ -230,7 +231,7 @@ public: // Functionality
 
     bool exists(const _T &source)
     {
-        if(atKey(source) != nullptr)
+        if(atKey(source) != NULL)
             return true;
 
         return false;
@@ -238,7 +239,7 @@ public: // Functionality
 
     _T& head()
     {
-        if(_head != nullptr)
+        if(_head != NULL)
             return _head->__data;
 
         else
@@ -247,7 +248,7 @@ public: // Functionality
 
     _T& tail()
     {
-        if(_tail != nullptr)
+        if(_tail != NULL)
             return _tail->__data;
 
         else
@@ -262,8 +263,12 @@ private: // Utility functions for above functions
 
     void _ctor()
     {
-        _head = nullptr;
-        _tail = nullptr;
+        _head = NULL;
+        _tail = NULL;
+
+        if(numberForGrouping < 2)
+            throw invalid_argument("The reference number must be greater than 1");
+
         _groupNumber = numberForGrouping;
     }
 
@@ -272,6 +277,10 @@ private: // Utility functions for above functions
         Node* temp = new Node(info);
         _head = temp;
         _tail = _head;
+
+        if(numberForGrouping < 2)
+            throw invalid_argument("The reference number must be greater than 1");
+
         _groupNumber = numberForGrouping;
     }
 
@@ -287,20 +296,24 @@ private: // Utility functions for above functions
         }
     }
 
-    void insert(Node* position, const _T &info) // This does a Node insertion after the position Node
+    bool insert(Node* position, const _T &info) // This does a Node insertion after the position Node
     {
         Node* newNode = new Node(info, position); // Link it backwards
         newNode->__next = position->__next;
         position->__next->__prev = newNode; // Link the Node after newNode back to newNode
         position->__next = newNode;
-        increaseSize();
+        return increaseSize();
     }
 
-    void increaseSize()
+    bool increaseSize() // Returns true if a new element was added to the reference vector so I know not to shift this one when adjusting during an insert
     {
         ++ _totalSize;
         if((_groupNumber) && _totalSize % _groupNumber == 0)
-                    _referenceVector.push_back(_tail); // This will put a reference into the vector for helping to look up
+        {
+            _referenceVector.push_back(_tail); // This will put a reference into the vector for helping to look up
+            return true;
+        }
+        return false;
     }
 
     bool decreaseSize()
@@ -321,10 +334,10 @@ private: // Utility functions for above functions
     Node* atKey(const _T &key)
     {
         Node* temp = _head;
-        while(temp != nullptr && !(temp->__data == key)) // User should overload the == operator for this function
+        while(temp != NULL && !(temp->__data == key)) // User should overload the == operator for this function
             temp = temp->__next;
 
-        return temp; // returns nullptr if the key does not exist
+        return temp; // returns NULL if the key does not exist
     }
 
     Node* atIndex(unsigned int index)
@@ -347,12 +360,33 @@ private: // Utility functions for above functions
         return temp;
     }
 
-    void shiftForward(int startIndex)
+    void _shiftForward(int startIndex, bool newElement, bool insertAfter) // This shifts the references in the vector to their 'prev' node ( used when an insert occurs )
     {
-        for(int i = startIndex; i < _referenceVector.size(); ++i)
+        if(insertAfter) // We inserted after the index, so we will not shift anything before or at it
+            ++startIndex;
+        else // We inserted before the index, so it needs to be included in evaluation of shifting
+            --startIndex;
+
+        int start = 0; // By default, if startIndex is < _groupNumber, I need to shift the entire vector.
+        if(startIndex >= _groupNumber)
+            start = startIndex / _groupNumber; // This shifts everything that is AFTER the insert
+
+        if(newElement) // Don't shift the last element (the new one just added)
         {
-            assert ( ( _referenceVector[i])->__prev != nullptr );
-            _referenceVector[i] = (_referenceVector[i])->__prev;
+            for(int i = start; i < _referenceVector.size() - 1; ++i)
+            {
+                assert ( ( _referenceVector[i])->__prev != NULL );
+                _referenceVector[i] = (_referenceVector[i])->__prev;
+            }
+        }
+
+        else
+        {
+            for(int i = start; i < _referenceVector.size(); ++i)
+            {
+                assert ( ( _referenceVector[i])->__prev != NULL );
+                _referenceVector[i] = (_referenceVector[i])->__prev;
+            }
         }
     }
 
