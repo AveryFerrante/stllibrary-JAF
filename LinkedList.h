@@ -116,7 +116,8 @@ public: // Functionality
         }
 
         bool newElement = increaseSize();
-        _shiftForward(0, newElement, true);
+        if(_groupNumber)
+            _shiftForward(0, newElement, true);
     }
 
     void insertAfter(unsigned int index, _T info) // Inserts the Node* AFTER the Node at index
@@ -131,7 +132,8 @@ public: // Functionality
         {
             Node* temp = atIndex(index);
             bool newElement = insert(temp, info);
-            _shiftForward(index, newElement, true);
+            if(_groupNumber)
+                _shiftForward(index, newElement, true);
         }
     }
 
@@ -178,49 +180,6 @@ public: // Functionality
         return false;
     }
 
-    void swap(unsigned int pos1, unsigned int pos2) // This function / its helper function needs work, it seg faults.
-    {
-        if(pos1 > _totalSize - 1 || pos2 > _totalSize - 1)
-            throw out_of_range("Attempted to swap an element outside of the range of the current list");
-
-        if(pos1 == pos2)
-            return;
-
-        Node* first = atIndex(pos1);
-        Node* second = atIndex(pos2);
-
-        if(first == _head)
-        {
-            _swap(first, second);
-
-            if(second == _tail)
-                _tail = first;
-
-            _head = second;
-        }
-        else if(second == _head)
-        {
-            _swap(first, second);
-
-            if(first == _tail)
-                _tail = second;
-
-            _head = first;
-        }
-        else if(first == _tail)
-        {
-            _swap(first, second);
-            _tail = second;
-        }
-        else if(second == _tail)
-        {
-            _swap(first, second);
-            _tail = first;
-        }
-        else
-            _swap(first, second);
-    }
-
     int size() { return _totalSize; }
 
     _T& operator[](unsigned int index)
@@ -254,9 +213,6 @@ public: // Functionality
         else
             throw out_of_range("Failed to return 'tail' data: the current list is empty");
     }
-
-
-
 
 
 private: // Utility functions for above functions
@@ -389,24 +345,6 @@ private: // Utility functions for above functions
             }
         }
     }
-
-    void _swap(Node* first, Node* second)
-    {
-        Node* temp;
-
-        // Swaps the 'next' pointers values
-        temp = first->__next;
-        first->__next = second->__next;
-        second->__next = temp;
-
-        // Swaps the 'prev' pointers values
-        temp = first->__prev;
-        first->__prev = second->__prev;
-        second->__prev = temp;
-
-    }
-
-
 };
 
 #endif // LINKEDLIST_H
